@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SUN-ALARM</title>
+    <style>
+      div {
+        margin: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <div>
+        <label for="hinode-jikoku">日の出：</label>
+        <input type="time" id="hinode-jikoku"/>
+        <input type="number" id="hinode-kankaku" /> 分
+    </div>
+    <div>
+        <label for="hinoiri-jikoku">日の入：</label>
+        <input type="time" id="hinoiri-jikoku" />
+        <input type="number" id="hinoiri-kankaku" /> 分
+    </div>
+    <div id="tekiyo-button">
+        <input type="button" value="適用">
+        <input type="button" value="寝る！" id="neru">
+    </div> -->
+    <div style="text-align: center">
+      <h1 id="genzai-jikoku" style="font-size: 18vw;"></h1>
+    </div>
+    <script>
+
+      // // 日の出時刻の取得
+      // const hinode_jikoku = document.getElementById("hinode-jikoku");
+      // let hinodeDate = new Date();
+      // hinode_jikoku.addEventListener("change",event => {
+      //     hinodeDate.setHours(event.target.value.split(":")[0]);
+      //     hinodeDate.setMinutes(event.target.value.split(":")[1]);
+      //     hinodeDate.setSeconds(0);
+      //     console.log(hinodeDate);
+      // });
+      // const hinode_kankaku = document.getElementById("hinode-kankaku");
+      // let hinodeInterval = 0;
+      // hinode_kankaku.addEventListener("change",event => {
+      //     hinodeInterval = parseInt(event.target.value) * 60; //秒
+      //     hinodeInterval = !hinodeInterval ? 0 : hinodeInterval;
+      //     hinode_kankaku.value = hinodeInterval;
+      //     console.log(hinodeInterval);
+      // });
+
+      // // 日の出時刻の取得
+      // const hinoiri_jikoku = document.getElementById("hinoiri-jikoku");
+      // let hinoiriDate = new Date();
+      // hinoiri_jikoku.addEventListener("change",event => {
+      //     hinoiriDate.setHours(event.target.value.split(":")[0]);
+      //     hinoiriDate.setMinutes(event.target.value.split(":")[1]);
+      //     hinoiriDate.setSeconds(0);
+      //     console.log(hinoiriDate);
+      // });
+      // const hinoiri_kankaku = document.getElementById("hinoiri-kankaku");
+      // let hinoiriInterval = 0;
+      // hinoiri_kankaku.addEventListener("change",event => {
+      //     hinoiriInterval = parseInt(event.target.value) * 60; //秒
+      //     hinoiriInterval = !hinoiriInterval ? 0 : hinoiriInterval;
+      //     hinoiri_kankaku.value = hinoiriInterval / 60;
+      //     console.log(hinoiriInterval);
+      // });
+
+      // // 背景色の制御
+      // let state = 0; // 0が暗い、1が日の出遷移中、2が昼間、3が日の入遷移中
+      // document.getElementById("neru").addEventListener("click", () => state = 0);
+      // setInterval(() => {
+      //     // (割合/間隔) * 経過秒数
+      //     // 分を秒に変換
+      //     // 色をhslで制御
+      //     let hue = 15; // 固定
+      //     const n = new Date();
+      //     if (n.getHours() == hinodeDate.getHours() && n.getMinutes() < hinodeDate.getMinutes()) {
+      //         state = 1;
+      //     } else if (n.getHours() == hinodeDate.getHours() && n.getMinutes() >= hinodeDate.getMinutes()) {
+      //         state = 2;
+      //     }
+      //     //
+      //     let saturation = "0%";
+      //     let lightness = "0%";
+      //     if (state == 0){
+      //         saturation = "0%";
+      //         lightness = "0%";
+      //     } else if (state == 1) {
+      //         saturation = "100%";
+      //         lightness = `${Math.floor((100 / hinodeInterval)) * hinodeInterval}%`;
+      //     } else if (state == 2) {
+      //         saturation = "0%";
+      //         lightness = "100%";
+      //     }
+      //     document.body.style.backgroundColor = `hsl(${hue}, ${saturation}, ${lightness})`;
+      //     console.log(`state:${state}`);
+      // },1000);
+
+      /*
+      テスト用
+      */
+      class Date_ extends Date{
+        constructor() {
+            super()
+            // this.setFullYear(2023);
+            // this.setDate(31);
+            // this.setMonth(0);
+            // this.setHours(this.getHours()+5);
+            // this.setMinutes(this.getMinutes()+9);
+        }
+      }
+
+      const loadedTime = new Date_();
+      const alarmTime = 4;
+      const alarmDate = new Date_();
+      alarmDate.setHours(alarmTime);
+      alarmDate.setMinutes(0);
+      alarmDate.setSeconds(0);
+      alarmDate.setMilliseconds(0);
+
+      // 日付設定
+      if (loadedTime.getHours() >= alarmTime) {
+        // 読み込んだ時点で設定時刻を過ぎていれば、次の日のアラームをセットしたとして扱う
+        alarmDate.setDate(alarmDate.getDate()+1);
+      }
+
+      setInterval(() => {
+        if (loadedTime < alarmDate && new Date_() < alarmDate) {
+            document.body.style.backgroundColor = "#000000";
+            genzai_jikoku.style.color = "#000c0f";
+        } else if (loadedTime < alarmDate && new Date_() >= alarmDate) {
+            document.body.style.backgroundColor = "#FFFFFF";
+            genzai_jikoku.style.color = "#000000";
+        }
+      }, 500);
+
+      // 現在時刻載設定
+      const genzai_jikoku = document.getElementById("genzai-jikoku");
+      setInterval(() => {
+        genzai_jikoku.innerText = new Date_().toLocaleTimeString();
+      }, 1000);
+
+      console.log(`次回の動作時刻：${alarmDate.toLocaleString()}`);
+      console.log(`現在時刻：${new Date_().toLocaleString()}`);
+      console.log(`ロード時刻：${loadedTime.toLocaleString()}`);
+    </script>
+  </body>
+</html>
