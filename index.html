@@ -27,10 +27,9 @@
         <input type="button" value="寝る！" id="neru">
     </div> -->
     <div style="text-align: center">
-      <h1 id="genzai-jikoku" style="font-size: 18vw;"></h1>
+      <h1 id="genzai-jikoku" style="font-size: 18vw"></h1>
     </div>
     <script>
-
       // // 日の出時刻の取得
       // const hinode_jikoku = document.getElementById("hinode-jikoku");
       // let hinodeDate = new Date();
@@ -98,17 +97,66 @@
       //     console.log(`state:${state}`);
       // },1000);
 
+      function hsl2rgb(hsl) {
+        var h = hsl[0];
+        var s = hsl[1];
+        var l = hsl[2];
+
+        var max = l + (s * (1 - Math.abs(2 * l - 1))) / 2;
+        var min = l - (s * (1 - Math.abs(2 * l - 1))) / 2;
+
+        var rgb;
+        var i = parseInt(h / 60);
+
+        switch (i) {
+          case 0:
+          case 6:
+            rgb = [max, min + (max - min) * (h / 60), min];
+            break;
+
+          case 1:
+            rgb = [min + (max - min) * (120 - h / 60), max, min];
+            break;
+
+          case 2:
+            rgb = [min, max, min + (max - min) * (h - 120 / 60)];
+            break;
+
+          case 3:
+            rgb = [min, min + (max - min) * (240 - h / 60), max];
+            break;
+
+          case 4:
+            rgb = [min + (max - min) * (h - 240 / 60), min, max];
+            break;
+
+          case 5:
+            rgb = [max, min, min + (max - min) * (360 - h / 60)];
+            break;
+        }
+
+        return rgb.map(function (value) {
+          return value * 255;
+        })
+        .map(v => Math.floor(v));
+      }
+
       /*
       テスト用
       */
-      class Date_ extends Date{
-        constructor() {
-            super()
-            // this.setFullYear(2023);
-            // this.setDate(31);
-            // this.setMonth(0);
-            // this.setHours(this.getHours()+5);
-            // this.setMinutes(this.getMinutes()+9);
+      class Date_ extends Date {
+        constructor(time) {
+          super();
+          // this.setFullYear(2023);
+          // this.setDate(1);
+          // this.setMonth(1);
+          // this.setHours(this.getHours()+5);
+          // this.setMinutes(this.getMinutes()+25);
+          if (time) this.setTime(time);
+        }
+
+        addMinutes(minutes) {
+            this.setMinutes(this.getMinutes() + minutes);
         }
       }
 
@@ -119,20 +167,30 @@
       alarmDate.setMinutes(0);
       alarmDate.setSeconds(0);
       alarmDate.setMilliseconds(0);
+      const transitionMin = 30;
 
       // 日付設定
       if (loadedTime.getHours() >= alarmTime) {
         // 読み込んだ時点で設定時刻を過ぎていれば、次の日のアラームをセットしたとして扱う
-        alarmDate.setDate(alarmDate.getDate()+1);
+        alarmDate.setDate(alarmDate.getDate() + 1);
       }
+      // 遷移時刻の決定
+      const transitionDateTime = new Date_(alarmDate.getTime());
+      transitionDateTime.addMinutes(-1 * transitionMin);
 
       setInterval(() => {
-        if (loadedTime < alarmDate && new Date_() < alarmDate) {
-            document.body.style.backgroundColor = "#000000";
-            genzai_jikoku.style.color = "#000c0f";
-        } else if (loadedTime < alarmDate && new Date_() >= alarmDate) {
-            document.body.style.backgroundColor = "#FFFFFF";
-            genzai_jikoku.style.color = "#000000";
+        let nowDateTime = new Date_();
+        if (loadedTime < alarmDate && nowDateTime < alarmDate) {
+          let rgb = "000000";
+          if (nowDateTime >= transitionDateTime) {
+            rgb = hsl2rgb([10, 1, (nowDateTime - transitionDateTime) * (1/(alarmDate - transitionDateTime))]);
+            rgb = rgb.map(num => num.toString(16)).map(num => `0${num}`.slice(-2)).join("");
+          }
+          document.body.style.backgroundColor = `#${rgb}`;
+          genzai_jikoku.style.color = "#000c0f";
+        } else if (loadedTime < alarmDate && nowDateTime >= alarmDate) {
+          document.body.style.backgroundColor = `#FFFFFF`;
+          genzai_jikoku.style.color = "#000000";
         }
       }, 500);
 
@@ -145,6 +203,7 @@
       console.log(`次回の動作時刻：${alarmDate.toLocaleString()}`);
       console.log(`現在時刻：${new Date_().toLocaleString()}`);
       console.log(`ロード時刻：${loadedTime.toLocaleString()}`);
+      console.log(`遷移開始時刻：${transitionDateTime.toLocaleString()}`);
     </script>
   </body>
 </html>
